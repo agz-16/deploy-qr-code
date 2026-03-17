@@ -1,3 +1,4 @@
+# Frontend Dockerfile
 #uses Node.js 24 alpine as the base image
 FROM node:24-alpine
 
