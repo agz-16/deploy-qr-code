@@ -1,0 +1,54 @@
+# ---- DEPLOYMENT ----
+apiVersion: apps/v1
+# defining the type of Kubernetes resource
+# for this it's a Deployment which manages and monitors your pods
+kind: Deployment
+
+metadata:
+  # Name used in kubectl commands
+  name: qr-frontend
+spec:
+  # replicas = how many copies of the container to run
+  # two copies for high availability so if one pod crashes the other keeps running
+  replicas: 2
+  
+  # Manage any pod with the label "app: qr-frontend"
+  selector:
+    matchLabels:
+      app: qr-frontend
+  template:
+    metadata:
+      # Stamp every pod with this label so the selector can find them
+      labels:
+        app: qr-frontend
+    spec:
+      containers:
+      - name: qr-frontend
+        # Your Docker Hub image
+        image: agabriel16/qr-code-frontend:latest
+        ports:
+        # Port Next.js listens on inside the container
+        - containerPort: 3000
+        env:
+          - name: NEXT_PUBLIC_API_URL
+            value: "http://qr-api-service:8000"
+
+---
+# ---- SERVICE ----
+apiVersion: v1
+kind: Service
+metadata:
+  name: qr-frontend-service
+spec:
+  # LoadBalancer provisions an AWS Elastic Load Balancer to expose the app to the internet
+  type: LoadBalancer
+  # Route traffic to pods with this label
+  selector:
+    app: qr-frontend
+  ports:
+    - protocol: TCP
+      # Port 80 is the standard HTTP port that users hit in their browser
+      port: 80
+      # Forward that traffic to port 3000 inside the container
+      targetPort: 3000
+      

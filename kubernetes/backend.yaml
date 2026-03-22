@@ -1,0 +1,65 @@
+# ---- DEPLOYMENT ----
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # Name used in kubectl commands
+  name: qr-api
+spec:
+  # Two copies for high availability
+  replicas: 2
+
+  # Manage any pod with the label "app: qr-api"
+  selector:
+    matchLabels:
+      app: qr-api
+  template:
+    metadata:
+      # Stamp every pod with this label so the selector can find them
+      labels:
+        app: qr-api
+    spec:
+      containers:
+      - name: qr-api
+        # Your Docker Hub image
+        image: agabriel16/qr-code-backend:latest
+        ports:
+        # Port FastAPI listens on inside the container
+        - containerPort: 8000
+
+        # AWS credentials so the backend can connect to S3
+        env:
+          - name: AWS_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws-credentials
+                key: AWS_ACCESS_KEY
+          - name: AWS_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws-credentials
+                key: AWS_SECRET_KEY
+          - name: BUCKET_NAME
+            valueFrom:
+              secretKeyRef:
+                name: aws-credentials
+                key: BUCKET_NAME
+
+---
+# ---- SERVICE ----
+apiVersion: v1
+kind: Service
+metadata:
+  name: qr-api-service
+spec:
+  # ClusterIP means internal only so only other pods inside the cluster can reach this
+  type: ClusterIP
+
+  # Route traffic to pods with this label
+  selector:
+    app: qr-api
+  ports:
+    - protocol: TCP
+      # Port other pods use to reach this service
+      port: 8000
+      # Forward to port 8000 inside the container
+      targetPort: 8000
