@@ -21,7 +21,7 @@ spec:
       containers:
       - name: qr-api
         # Your Docker Hub image
-        image: agabriel16/qr-code-backend:latest
+        image: agabriel16/devops-qr-code-backend:latest
         ports:
         # Port FastAPI listens on inside the container
         - containerPort: 8000

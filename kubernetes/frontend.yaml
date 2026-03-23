@@ -25,7 +25,7 @@ spec:
       containers:
       - name: qr-frontend
         # Your Docker Hub image
-        image: agabriel16/qr-code-frontend:latest
+        image: agabriel16/devops-qr-code-frontend:latest
         ports:
         # Port Next.js listens on inside the container
         - containerPort: 3000
